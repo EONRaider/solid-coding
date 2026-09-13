@@ -1,0 +1,47 @@
+{
+  "skill_name": "solid-coding",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Run solid-coding's refactor/audit mode over evals/files/fixture-no-tests/pricing.py and report findings. Do not apply any fix without asking first.",
+      "expected_output": "Discovery reports no recognized ecosystem verification tooling for this bare fixture (no package manifest, no CI config) and says so plainly rather than inventing a check. Analysis reports an SRP/SoC finding (process_order mixes persistence, business-rule application, and formatting) and an OCP finding (the type-keyed discount conditional). Both findings are independently verified (CONFIRMED or PLAUSIBLE, with reasoning citing call sites and the actual code). Because the fixture has no tests, the report proposes adding a characterization test before any refactor, or explicitly flags the missing safety net, rather than silently refactoring untested behavior.",
+      "files": ["evals/files/fixture-no-tests/pricing.py"],
+      "expectations": [
+        "Reports that no existing test/lint/build tooling was found for this fixture, without inventing a command to run",
+        "Identifies an SRP or Separation-of-Concerns violation in process_order citing the mixed persistence/business-rule/formatting responsibilities",
+        "Identifies an OCP violation in the type-keyed discount conditional",
+        "Each finding shows an independent verification step (a verdict of CONFIRMED, PLAUSIBLE, or REJECTED with reasoning), not just the raw reviewer output",
+        "Notes the absence of test coverage and proposes or asks about a characterization test rather than silently refactoring untested code",
+        "Does not apply any fix without asking first"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Run solid-coding's discovery phase against evals/files/fixture-with-ci, then run analysis mode over src/report.js within it.",
+      "expected_output": "Discovery correctly infers 'npm run test' and 'npm run lint' from package.json's scripts block and finds the GitHub Actions workflow at .github/workflows/ci.yml, without proposing any tool the project doesn't already declare (no pytest, no unrelated linter). Analysis flags printCustomerCity's three-deep accessor chain as a Law of Demeter violation with a fix that adds a method to the order/customer abstraction instead of reaching through it.",
+      "files": [
+        "evals/files/fixture-with-ci/package.json",
+        "evals/files/fixture-with-ci/.github/workflows/ci.yml",
+        "evals/files/fixture-with-ci/src/report.js"
+      ],
+      "expectations": [
+        "Discovery output includes 'npm run test' and 'npm run lint' as the verification commands, sourced from package.json",
+        "Discovery output notes the GitHub Actions workflow file",
+        "Discovery does not propose any verification command the fixture doesn't already declare (e.g. no pytest, no unrelated linter)",
+        "Analysis identifies the accessor chain in printCustomerCity as a Law of Demeter violation",
+        "The proposed fix delegates through a new method rather than merely reordering the same chain"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Run solid-coding's analysis and adversarial-verification phases over evals/files/fixture-coincidental-duplication/validators.py for the dry-aha-yagni cluster.",
+      "expected_output": "The two validator functions are recognized as coincidentally similar rather than genuinely duplicated knowledge, because they encode independently-changing business rules (a price floor and an age floor). The skill does not propose merging them into a single shared helper; if solid-reviewer raises it as a candidate anyway, solid-verifier rejects the merge citing the independent-business-rule distinction from references/principle-tensions.md.",
+      "files": ["evals/files/fixture-coincidental-duplication/validators.py"],
+      "expectations": [
+        "Does not propose merging validate_price and validate_age into one shared helper",
+        "If a merge is raised as a candidate, the final reported verdict rejects it and explains the coincidental-vs-real-duplication distinction",
+        "The final report does not list a DRY violation as CONFIRMED for these two functions"
+      ]
+    }
+  ]
+}

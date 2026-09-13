@@ -1,0 +1,34 @@
+# Changelog
+
+All notable changes to solid-coding are documented here. Format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versioning
+follows [Semantic Versioning](https://semver.org/) — pre-1.0, so behavior
+can still shift between minor versions. Version headers here match the
+repo's git tags, which follow GitHub's `vX.Y.Z` convention.
+
+## [Unreleased]
+
+## [v0.1.0] - 2026-09-13
+
+### Added
+
+- Initial release: `solid-coding` skill with the five-phase methodology
+  (discovery, parallel per-cluster analysis, adversarial verification,
+  incremental execution, structured report) covering SOLID, the GoF
+  design-pattern catalog, and complementary principles (DRY, KISS, YAGNI,
+  Boy Scout Rule, Separation of Concerns, Encapsulation, Law of Demeter,
+  Command-Query Separation, TDD, AHA), plus the principle-tensions
+  reference that governs when a technically-correct finding should still
+  be rejected or scaled down.
+- `solid-reviewer` and `solid-verifier` subagents for parallel,
+  per-cluster analysis and independent adversarial verification of every
+  finding before it's reported or applied.
+- `scripts/discover_ci_qa.py` for deterministic detection of a repo's
+  existing verification tooling (Node/npm/yarn/pnpm, Python, Rust, Go,
+  Java/Maven/Gradle, .NET, Ruby, PHP, Elixir, Makefile targets, and
+  common CI configs) — discovery never invents tooling a repo doesn't
+  already have.
+- Three eval fixtures covering an untested SRP/OCP violation, a
+  Node project with existing CI/QA tooling that discovery must respect
+  rather than override, and a coincidental-duplication case that a naive
+  DRY pass would wrongly merge.
