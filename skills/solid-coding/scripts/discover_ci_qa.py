@@ -18,7 +18,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -37,6 +39,14 @@ NODE_SCRIPT_MAP = {
     "test": ["test", "test:unit", "test:ci"],
     "lint": ["lint", "lint:check"],
     "typecheck": ["typecheck", "type-check", "tsc"],
+    "build": ["build"],
+}
+
+# justfile recipe names that map to each verification category, in preference order.
+JUST_RECIPE_MAP = {
+    "test": ["test", "tests"],
+    "lint": ["clippy", "lint", "fmt-check", "fmt"],
+    "typecheck": ["check"],
     "build": ["build"],
 }
 
@@ -84,13 +94,44 @@ def detect_python(root: Path, commands: dict, notes: list, ecosystems: list):
         notes.append("Poetry project detected — verification commands likely run via 'poetry run <cmd>'")
 
 
-def detect_rust(root: Path, commands: dict, ecosystems: list):
+def _find_justfile(root: Path) -> Path | None:
+    for name in ("justfile", "Justfile", ".justfile"):
+        candidate = root / name
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def detect_rust(root: Path, commands: dict, notes: list, ecosystems: list):
     if not (root / "Cargo.toml").exists():
         return
     ecosystems.append("rust")
-    commands.setdefault("test", []).append("cargo test")
-    commands.setdefault("lint", []).append("cargo clippy")
-    commands.setdefault("build", []).append("cargo build")
+
+    justfile = _find_justfile(root)
+    if justfile is None:
+        commands.setdefault("test", []).append("cargo test")
+        commands.setdefault("lint", []).append("cargo clippy")
+        commands.setdefault("build", []).append("cargo build")
+        return
+
+    try:
+        text = justfile.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        text = ""
+    recipe_names = set(re.findall(r"^@?([A-Za-z_][\w-]*)[^\n:]*:(?!=)", text, re.MULTILINE))
+
+    for category, candidates in JUST_RECIPE_MAP.items():
+        for name in candidates:
+            if name in recipe_names:
+                commands.setdefault(category, []).append(f"just {name}")
+                break
+
+    if "check" in recipe_names:
+        notes.append(
+            f"{justfile.name} defines a 'check' recipe — treat 'just check' as this crate's "
+            "primary verification gate (it may chain fmt/clippy/doc/test steps under one "
+            "command); prefer it over the individual cargo commands above when verifying."
+        )
 
 
 def detect_go(root: Path, commands: dict, ecosystems: list):
@@ -171,17 +212,55 @@ def detect_makefile(root: Path, commands: dict):
             commands.setdefault(category, []).append(f"make {category}")
 
 
-def detect_ci_configs(root: Path) -> list:
+def _scan_ci_configs(directory: Path) -> list:
     found = []
     for rel_path, name, kind in CI_CONFIG_PATTERNS:
-        target = root / rel_path
+        target = directory / rel_path
         if kind == "dir" and target.is_dir():
-            workflow_files = sorted(str(p.relative_to(root)) for p in target.glob("*.yml")) + \
-                              sorted(str(p.relative_to(root)) for p in target.glob("*.yaml"))
+            workflow_files = sorted(str(p.relative_to(directory)) for p in target.glob("*.yml")) + \
+                              sorted(str(p.relative_to(directory)) for p in target.glob("*.yaml"))
             if workflow_files:
                 found.append({"system": name, "files": workflow_files})
         elif kind == "file" and target.is_file():
             found.append({"system": name, "files": [rel_path]})
+    return found
+
+
+def _git_repo_root(start: Path) -> Path | None:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            cwd=start, capture_output=True, text=True, timeout=5,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if result.returncode != 0 or not result.stdout.strip():
+        return None
+    return Path(result.stdout.strip())
+
+
+def detect_ci_configs(root: Path, notes: list) -> list:
+    found = _scan_ci_configs(root)
+
+    resolved_root = root.resolve()
+    repo_root = _git_repo_root(root)
+    if repo_root is not None:
+        resolved_repo_root = repo_root.resolve()
+        if resolved_repo_root != resolved_root and resolved_repo_root in resolved_root.parents:
+            ancestor = resolved_root.parent
+            while True:
+                for entry in _scan_ci_configs(ancestor):
+                    entry["found_at"] = os.path.relpath(ancestor, resolved_root)
+                    found.append(entry)
+                if ancestor == resolved_repo_root:
+                    break
+                ancestor = ancestor.parent
+            if any("found_at" in entry for entry in found):
+                notes.append(
+                    "Some CI configs were found above this root, at the repo's git top-level "
+                    f"({resolved_repo_root}) — this package root is likely a monorepo member "
+                    "gated by a superproject-level workflow rather than one of its own."
+                )
     return found
 
 
@@ -201,7 +280,7 @@ def main() -> int:
 
     detect_node(root, commands, notes, ecosystems)
     detect_python(root, commands, notes, ecosystems)
-    detect_rust(root, commands, ecosystems)
+    detect_rust(root, commands, notes, ecosystems)
     detect_go(root, commands, ecosystems)
     detect_jvm(root, commands, ecosystems)
     detect_dotnet(root, commands, ecosystems)
@@ -210,7 +289,7 @@ def main() -> int:
     detect_elixir(root, commands, ecosystems)
     detect_makefile(root, commands)
 
-    ci_configs = detect_ci_configs(root)
+    ci_configs = detect_ci_configs(root, notes)
 
     for category in ("test", "lint", "typecheck", "build"):
         if category in commands:

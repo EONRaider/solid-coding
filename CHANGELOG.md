@@ -8,6 +8,22 @@ repo's git tags, which follow GitHub's `vX.Y.Z` convention.
 
 ## [Unreleased]
 
+### Fixed
+
+- `discover_ci_qa.py`'s `detect_rust` now checks for a `justfile` /
+  `Justfile` and, when present, reports `just <recipe>` commands (e.g.
+  `just check`, `just clippy`, `just test`) instead of always defaulting
+  to bare `cargo test`/`cargo clippy`/`cargo build` — matching how
+  justfile-driven Rust crates actually gate CI.
+- `detect_ci_configs` now walks up from the scanned root toward the
+  actual git repository root (via `git rev-parse --show-toplevel`)
+  looking for CI configs such as `.github/workflows/`, so a
+  subdirectory-rooted package in a monorepo (e.g. a `backend/` crate
+  under a superproject root) is correctly reported as CI-gated instead
+  of showing an empty `ci_configs`.
+- Added a Rust-in-a-monorepo eval fixture (`fixture-rust-monorepo`)
+  covering both fixes together.
+
 ## [v0.1.0] - 2026-09-13
 
 ### Added
