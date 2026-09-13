@@ -42,6 +42,22 @@
         "If a merge is raised as a candidate, the final reported verdict rejects it and explains the coincidental-vs-real-duplication distinction",
         "The final report does not list a DRY violation as CONFIRMED for these two functions"
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "Run solid-coding's discovery phase (scripts/discover_ci_qa.py) against evals/files/fixture-rust-monorepo/backend.",
+      "expected_output": "Discovery recognizes the rust ecosystem and, because a justfile is present, reports 'just test', 'just clippy', and 'just check' as the verification commands instead of the bare cargo test/clippy/build defaults, and notes that 'just check' is the crate's primary aggregate gate. It also walks up from backend/ to the repo root and finds the GitHub Actions workflow at ../.github/workflows/ci.yml, which lives above the scanned root, flagging that this package is a monorepo member gated by a superproject-level workflow.",
+      "files": [
+        "evals/files/fixture-rust-monorepo/backend/Cargo.toml",
+        "evals/files/fixture-rust-monorepo/backend/justfile",
+        "evals/files/fixture-rust-monorepo/.github/workflows/ci.yml"
+      ],
+      "expectations": [
+        "verification_commands is derived from the justfile's recipes ('just test', 'just clippy', 'just check'), not bare 'cargo test'/'cargo clippy'/'cargo build'",
+        "A note calls out 'just check' as the crate's primary/aggregate verification gate",
+        "ci_configs includes the GitHub Actions workflow found above the scanned root (not an empty list)",
+        "A note explains the CI config was found at the repo's git top-level rather than at this package root"
+      ]
     }
   ]
 }

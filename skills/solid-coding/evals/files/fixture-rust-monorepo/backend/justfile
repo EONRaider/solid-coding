@@ -1,0 +1,19 @@
+check: fmt-check clippy doc test test-doc openapi-diff
+
+fmt-check:
+    cargo fmt --check
+
+clippy:
+    cargo clippy --all-targets -- -D warnings
+
+doc:
+    RUSTDOCFLAGS="-D warnings" cargo doc --no-deps
+
+test:
+    cargo test --all-targets
+
+test-doc:
+    cargo test --doc
+
+openapi-diff:
+    ./scripts/openapi-diff.sh
