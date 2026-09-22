@@ -8,6 +8,27 @@ repo's git tags, which follow GitHub's `vX.Y.Z` convention.
 
 ## [Unreleased]
 
+## [v0.2.1] - 2026-09-22
+
+Documentation only — no change to the methodology, the subagents, the
+phases, or `discover_ci_qa.py`.
+
+### Added
+
+- **`Lifecycle` section in `SKILL.md`**, classifying the skill as
+  **encoded-preference, timelessness 9/10, last verified against
+  claude-sonnet-5 (2026-09)**. SOLID, the GoF catalog, and the
+  complementary-principle tensions this skill teaches are fixed
+  engineering judgment calls rather than a capability gap a better model
+  closes on its own, so the content doesn't age the way a
+  capability-uplift skill does. The score is 9 rather than 10 because one
+  component — the adversarial verifier's own judgment quality
+  (`agents/solid-verifier.md`) — would lose value if a model got
+  materially better at spotting an over-reaching refactor unaided.
+  Recording the classification in the skill body makes it available to
+  the audit tooling that looks for exactly this, and gives a future
+  reader the re-benchmarking trigger to watch for.
+
 ## [v0.2.0] - 2026-09-22
 
 ### Added
