@@ -58,6 +58,25 @@
         "ci_configs includes the GitHub Actions workflow found above the scanned root (not an empty list)",
         "A note explains the CI config was found at the repo's git top-level rather than at this package root"
       ]
+    },
+    {
+      "id": 5,
+      "prompt": "Run solid-coding's refactor/audit mode over evals/files/fixture-out-of-scope-duplication/invoice.py only, for the dry-aha-yagni cluster. Do not apply any fix without asking first.",
+      "expected_output": "Analysis and verification confirm a DRY violation at invoice.py:12: _format_cents re-implements money.format_cents, the same display rule, and the fix is to call money.format_cents instead. solid-verifier's independent grep finds identical _format_cents copies at receipt.py:1 and refund.py:1, which sit outside the requested scope. The phase-5 report lists both under an 'Out-of-scope occurrences' section, each with path:line, the principle (DRY), and the proposed fix, and says they are reported for the user to act on. Neither file is edited, neither is folded into the in-scope finding or its fix, and the report does not describe either occurrence as filed, queued, tracked, or fixed.",
+      "files": [
+        "evals/files/fixture-out-of-scope-duplication/invoice.py",
+        "evals/files/fixture-out-of-scope-duplication/money.py",
+        "evals/files/fixture-out-of-scope-duplication/receipt.py",
+        "evals/files/fixture-out-of-scope-duplication/refund.py"
+      ],
+      "expectations": [
+        "Reports a DRY finding for _format_cents in invoice.py, verified as CONFIRMED or PLAUSIBLE, whose fix reuses money.format_cents rather than introducing a new helper",
+        "The final report has an 'Out-of-scope occurrences' section listing receipt.py and refund.py, each with a path:line citation, the principle, and a proposed fix",
+        "The out-of-scope occurrences come from the verification step's own trace (or are re-confirmed by it), not only from the raw reviewer output",
+        "Does not modify receipt.py or refund.py, and does not widen the in-scope finding or its fix to cover them",
+        "States that the out-of-scope occurrences are for the user to act on, and never describes them as filed, queued, tracked, or fixed",
+        "Does not apply any fix without asking first"
+      ]
     }
   ]
 }

@@ -32,7 +32,8 @@ Both modes run the same five-phase process, detailed in full in `references/meth
 
 3. **Adversarial verification** — dispatch the `solid-verifier` subagent once per finding (in parallel across findings). It re-derives the violation from the code independently, traces call sites for behavior-preservation risk, and checks the proposed fix against `references/principle-tensions.md`. Verdicts: `CONFIRMED` / `PLAUSIBLE` / `REJECTED`.
 4. **Execution** (refactor mode only) — apply `CONFIRMED` (and user-approved `PLAUSIBLE`) fixes one increment at a time, running the repo's own discovered verification commands after each; stop immediately on a failure rather than stacking more changes on a broken baseline.
-5. **Report** — fixed / deferred (with the reason) / rejected (with the reason) / verification commands run and their outcome.
+5. **Report** — fixed / deferred (with the reason) / rejected (with the reason) / out-of-scope occurrences / verification commands run and their outcome.
+   Out-of-scope occurrences are copies of a confirmed defect that the reviewer's or verifier's call-site trace found *outside* the requested scope — each listed as `path:line`, the principle, and the proposed fix. They are reported for the user to act on: never applied without asking, and never described as filed, queued, or fixed.
 
 Use the plain `Agent` tool for phases 2 and 3, dispatched in parallel within each phase, rather than a gated multi-agent orchestration tool — this keeps the workflow available in every session regardless of whether heavier orchestration has been opted into separately.
 
@@ -55,4 +56,4 @@ Both can also be dispatched standalone, outside the full five-phase flow, for a 
 
 ## What this skill will not do
 
-Never introduce a new linter, test runner, formatter, or CI check that the repo doesn't already have configured — phase 1 exists specifically so this skill wires into what's there instead. Never apply a fix in refactor mode without a `CONFIRMED` (or explicitly user-approved `PLAUSIBLE`) verdict from phase 3. Never expand scope past what was requested (a diff stays a diff; advisory mode stays limited to files actually touched this session) without asking first.
+Never introduce a new linter, test runner, formatter, or CI check that the repo doesn't already have configured — phase 1 exists specifically so this skill wires into what's there instead. Never apply a fix in refactor mode without a `CONFIRMED` (or explicitly user-approved `PLAUSIBLE`) verdict from phase 3. Never expand scope past what was requested (a diff stays a diff; advisory mode stays limited to files actually touched this session) without asking first. When the same defect turns up outside that scope, report it under the phase-5 **Out-of-scope occurrences** section rather than fixing it or improvising a follow-up (an issue, a queued task) this skill has no mechanism to create.

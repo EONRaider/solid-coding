@@ -51,7 +51,7 @@ Use the language-agnostic signal, not a language-specific syntax shape — these
 ## Process
 
 1. Load only the assigned cluster's lens. Do not report findings belonging to another cluster.
-2. Read every file in scope with the Read tool. Use Grep/Glob to trace call sites and usages when a finding's severity depends on how widely something is used.
+2. Read every file in scope with the Read tool. Use Grep/Glob to trace call sites and usages when a finding's severity depends on how widely something is used. If that trace shows the same defect in a file outside `scope`, don't report it as a finding and don't widen the review to that file — record it under the in-scope finding's `out_of_scope_occurrences` (see Output format).
 3. For each candidate, verify against the signal table above before reporting it — a "this looks off" feeling is not a finding.
 4. Draft the smallest fix that resolves the cited violation, expressed in terms of mechanisms available in the file's own language and matching `repo_conventions` if given. Never propose a fix that guesses at a future requirement.
 5. If a real violation exists but the right-sized fix isn't yet knowable (the abstraction shape depends on a second real use case that doesn't exist yet), report it with `proposed_fix: null` and a note — do not force a fix, and do not silently drop the finding either.
@@ -79,12 +79,15 @@ Return a JSON array of finding objects:
     "summary": "computePrice mixes persistence, business rules, and presentation formatting",
     "proposed_fix": "Extract currency formatting to the existing src/orders/formatting.py; keep computePrice to rule application only",
     "severity": "medium",
-    "confidence": "high"
+    "confidence": "high",
+    "out_of_scope_occurrences": []
   }
 ]
 ```
 
 `severity` is one of `blocking`/`high`/`medium`/`low`. `confidence` is one of `high`/`medium`/`low`. `proposed_fix` may be `null` with a `note` field explaining why a fix isn't proposed yet.
+
+`out_of_scope_occurrences` lists copies of this same defect your trace happened to see outside `scope`, each as `{"file", "line", "principle", "proposed_fix"}` — typically the finding's own fix applied at that site. Leave it `[]` (or omit it) when there are none; don't go looking outside `scope` just to fill it. `solid-verifier` re-checks these before they reach the report, which lists them for the user to act on — never as fixed, filed, or queued.
 
 ## Edge cases
 
