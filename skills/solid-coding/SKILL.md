@@ -37,6 +37,10 @@ Both modes run the same five-phase process, detailed in full in `references/meth
 
 Use the plain `Agent` tool for phases 2 and 3, dispatched in parallel within each phase, rather than a gated multi-agent orchestration tool — this keeps the workflow available in every session regardless of whether heavier orchestration has been opted into separately.
 
+## Lifecycle
+
+`solid-coding` classifies as: **encoded-preference, timelessness 9/10, last verified against claude-sonnet-5 (2026-09).** SOLID, the GoF catalog, and the complementary-principle tensions this skill teaches are fixed, well-established engineering judgment calls, not a capability gap a smarter model closes on its own — a future model still benefits from a structured discovery/analysis/adversarial-verification/execution process and a written record of which principle wins a specific tension. The one component with any capability-uplift flavor is the adversarial verifier's own judgment quality (`agents/solid-verifier.md`), and that is the whole reason the score is 9 rather than a flat 10: a model that got materially better at spotting an over-reaching refactor unaided would erode that component's value, while leaving everything else here untouched.
+
 ## Reference material
 
 Load these as the corresponding phase or judgment call needs them — they're kept out of this file to keep it lean, not because they're optional reading before using the skill for the first time:
