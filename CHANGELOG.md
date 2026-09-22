@@ -8,6 +8,21 @@ repo's git tags, which follow GitHub's `vX.Y.Z` convention.
 
 ## [Unreleased]
 
+### Added
+
+- Phase-5 report section **Out-of-scope occurrences**: copies of a
+  confirmed defect that the analysis or verification trace finds outside
+  the requested scope, each listed as `path:line`, the principle, and the
+  proposed fix. They are reported for the user to act on — never applied
+  without asking, and never described as filed, queued, or fixed.
+  Documented in `SKILL.md` and `references/methodology.md`.
+- `out_of_scope_occurrences` field in `solid-reviewer`'s per-finding
+  output and `solid-verifier`'s verdict output; the verifier's
+  re-confirmed list feeds the report section. `solid-verifier` also
+  takes the requested `scope` as input.
+- Eval fixture `fixture-out-of-scope-duplication` and eval 5, where the
+  verifier finds a duplicated helper outside the requested file.
+
 ### Fixed
 
 - `discover_ci_qa.py`'s `detect_rust` now checks for a `justfile` /
