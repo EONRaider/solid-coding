@@ -8,6 +8,8 @@ repo's git tags, which follow GitHub's `vX.Y.Z` convention.
 
 ## [Unreleased]
 
+## [v0.2.0] - 2026-09-22
+
 ### Added
 
 - Phase-5 report section **Out-of-scope occurrences**: copies of a

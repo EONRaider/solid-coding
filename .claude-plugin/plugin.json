@@ -1,6 +1,6 @@
 {
   "name": "solid-coding",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Language-agnostic methodology for writing and refactoring code against SOLID, GoF design patterns, and complementary principles (DRY, KISS, YAGNI, Boy Scout, SoC, Encapsulation, Law of Demeter, CQS, TDD, AHA) — for whole-worktree refactors and live in-flight review alike. Wires into whatever CI/QA a repo already has and verifies every finding through an adversarial reviewer/verifier subagent pair before touching code.",
   "author": {
     "name": "EONRaider",
